@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { db } from "../config/Firebase";
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 
 const SalesmanProgress = () => {
-  const navigate = useNavigate();
   const [salesmanData, setSalesmanData] = useState([]);
   const [selectedSalesman, setSelectedSalesman] = useState(null);
   const [expandedSales, setExpandedSales] = useState({});

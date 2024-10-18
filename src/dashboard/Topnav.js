@@ -40,13 +40,13 @@ function Topnav() {
             </button>
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded"
-              onClick={() => navigate("/Signup")}
+              onClick={() => navigate("/")}
             >
               Create New Account
             </button>
             <button
               className="bg-blue-500 text-white px-4 py-2 ml-2 rounded"
-              onClick={() => navigate("/Login")}
+              onClick={() => navigate("/")}
             >
               Login
             </button>

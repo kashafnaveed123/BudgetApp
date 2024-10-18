@@ -1,8 +1,6 @@
 import React from "react";
 import { BrowserRouter , Routes , Route } from "react-router-dom";
 import Content from "./dashboard/Content";
-import Login from "./dashboard/Login";
-import Signup from "./dashboard/Signup";
 import SalesRepresentation from './SideBar/Sale'
 import Average from "./SideBar/Average";
 import SalesmanMain from "./SideBar/Salesman/SalesmanMain";
@@ -23,8 +21,6 @@ function App() {
    
     <Routes>
       <Route path="/" element={<Content />}/>
-      <Route path="/login" element={<Login/>}/>
-      <Route path="/signup" element={<Signup/>}/>
       <Route path="/SalesRepresentation" element={<SalesRepresentation/>}/>
       <Route path="/SalesmanMain" element={<SalesmanMain/>}/>
       <Route path="/SalesmanDetails" element={<SalesmanDetails/>}/>

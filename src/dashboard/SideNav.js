@@ -21,9 +21,9 @@ function SideNav({ profilePicURL, company }) {
           <img
             src={logo}
             width="70%"
-            alt="Profile Picture or Logo"
+            alt="NS Traders Logo" // Updated the alt attribute
             className="rounded-full"
-          ></img>
+          />
           <div className=" text-3xl">NS Traders</div>
         </div>
         <ul>
@@ -35,7 +35,7 @@ function SideNav({ profilePicURL, company }) {
           <li className="mb-4">
             <a
               href="/SalesRepresentation"
-              className="flex items-center  hover:bg-blue-100 p-3  rounded-lg"
+              className="flex items-center hover:bg-blue-100 p-3 rounded-lg"
               onClick={() => navigate("/SalesRepresentation")}
             >
               Sales Updates
@@ -45,7 +45,7 @@ function SideNav({ profilePicURL, company }) {
           <li className="mb-4">
             <a
               href="/loss"
-              className="flex items-center  hover:bg-blue-100 p-3  rounded-lg"
+              className="flex items-center hover:bg-blue-100 p-3 rounded-lg"
               onClick={() => navigate("/loss")}
             >
               Loss Updates
@@ -55,7 +55,7 @@ function SideNav({ profilePicURL, company }) {
           <li className="mb-4">
             <a
               href="/invoice"
-              className="flex items-center  hover:bg-blue-100 p-3  rounded-lg "
+              className="flex items-center hover:bg-blue-100 p-3 rounded-lg"
               onClick={() => navigate("/invoice")}
             >
               Invoice
@@ -64,7 +64,7 @@ function SideNav({ profilePicURL, company }) {
           <li className="mb-4">
             <a
               href="/SalesmanMain"
-              className="flex items-center hover:bg-blue-100 p-3  rounded-lg"
+              className="flex items-center hover:bg-blue-100 p-3 rounded-lg"
             >
               Salesman
             </a>
@@ -72,7 +72,7 @@ function SideNav({ profilePicURL, company }) {
           <li className="mb-4">
             <a
               href="/Stock"
-              className="flex items-center hover:bg-blue-100 p-3  rounded-lg"
+              className="flex items-center hover:bg-blue-100 p-3 rounded-lg"
               onClick={() => navigate("/Stock")}
             >
               Stock
