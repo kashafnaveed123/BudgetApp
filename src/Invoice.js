@@ -9,6 +9,7 @@ const Invoice = () => {
   const [items, setItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [salesman, setSalesman] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); // Search term for spices
   const [invoiceDetails, setInvoiceDetails] = useState({
     customerName: "",
     shopName: "",
@@ -42,6 +43,11 @@ const Invoice = () => {
     fetchSalesmen();
     fetchItems();
   }, []);
+
+  // Filter the spices based on the search term
+  const filteredItems = predefinedItems.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Add selected items to the invoice list
   const addSelectedItems = () => {
@@ -159,17 +165,17 @@ const Invoice = () => {
       <div className="text-center mb-8">
         <img src={logo} width='20%' alt="NS Traders" className="mx-auto mb-4 " />
         <h1 className="text-2xl font-bold">NS Traders</h1>
-        <p>آب کا اعتبار ہمارا یقین</p>
-        <p>پتہ: جزاوالہ روڈ، فیصل آباد</p>
-        <p>فون نمبر: نوید : 03086779747 | سرور: 03008983848</p>
+        <p>Your trust is our beleive</p>
+        <p>Address:Jaranwala Road,Faisalabad</p>
+        <p>Phone no. : Naveed: 03086779747 | Sarwar:03008983848</p>
         <div className="flex justify-between mt-4">
           <div>
-            <label>تاریخ: {invoiceDetails.date}</label>
+            <label>Date: {invoiceDetails.date}</label>
             <br />
-            <label>وقت: {invoiceDetails.time}</label>
+            <label>Time: {invoiceDetails.time}</label>
           </div>
           <div className="no-print">
-            <label>کسٹمر کا نام:</label>
+            <label> Customer Name</label>
             <input
               type="text"
               value={invoiceDetails.customerName}
@@ -182,7 +188,7 @@ const Invoice = () => {
               className="border border-gray-300 rounded p-2 mb-2 w-full"
               placeholder="کسٹمر کا نام درج کریں"
             />
-            <label>کسٹمر کی دکان کا نام:</label>
+            <label>Customer's shop name:</label>
             <input
               type="text"
               value={invoiceDetails.shopName}
@@ -193,20 +199,20 @@ const Invoice = () => {
                 })
               }
               className="border border-gray-300 rounded p-2 w-full"
-              placeholder="دکان کا نام درج کریں"
+              placeholder="Shop name"
             />
           </div>
         </div>
 
         {/* Salesman Dropdown */}
         <div className="mt-4 no-print">
-          <label>سیلز مین منتخب کریں:</label>
+          <label>Select Salesman</label>
           <select
             value={salesman}
             onChange={(e) => setSalesman(e.target.value)}
             className="border border-gray-300 rounded p-2 w-full"
           >
-            <option value="">سیلز مین منتخب کریں</option>
+            <option value="">Select Salesman</option>
             {salesmen.map((salesman) => (
               <option key={salesman.id} value={`${salesman.firstName} ${salesman.lastName}`}>
                 {salesman.firstName} {salesman.lastName}
@@ -219,17 +225,25 @@ const Invoice = () => {
       {/* Display Salesman, Customer Name, and Shop Name */}
       {salesman && invoiceDetails.customerName && invoiceDetails.shopName && (
         <div className="text-center mb-8 print-heading">
-          <p className="text-md font-bold">{salesman} :سیلز مین</p>
-          <p className="text-md"> {invoiceDetails.customerName} :کسٹمر کا نام</p>
-          <p className="text-md"> {invoiceDetails.shopName}  :کسٹمر کی دکان کا نام: </p>
+          <p className="text-md font-bold">Salesman:{salesman} </p>
+          <p className="text-md">Customer name: {invoiceDetails.customerName} </p>
+          <p className="text-md"> Customer Shop name:{invoiceDetails.shopName}   </p>
         </div>
       )}
 
       {/* Multi-Select for Adding Items */}
       <div className="mb-4 no-print">
-        <label className="block font-bold">آئٹم منتخب کریں:</label>
+        <label className="block font-bold">Select</label>
+        {/* Search input for spices */}
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search item"
+          className="border border-gray-300 rounded p-2 mb-2 w-full"
+        />
         <div className="border border-gray-300 rounded p-2 w-full">
-          {predefinedItems.map((item, index) => (
+          {filteredItems.map((item, index) => (
             <label key={index} className="flex items-center mb-2">
               <input
                 type="checkbox"
@@ -237,7 +251,7 @@ const Invoice = () => {
                 onChange={() => handleSelectItem(item)}
                 className="mr-2"
               />
-              {item.name} (  دستیاب: {item.quantity})
+              {item.name} ( Available: {item.quantity})
             </label>
           ))}
         </div>
@@ -245,71 +259,65 @@ const Invoice = () => {
           onClick={addSelectedItems}
           className="mt-2 bg-blue-500 text-white rounded p-2"
         >
-          منتخب آئٹمز شامل کریں
+          Add selected items
         </button>
       </div>
 
-      {/* Invoice Items Table */}
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border-b text-left">Delete</th>
-            <th className="py-2 px-4 border-b text-left">کل</th>
-            <th className="py-2 px-4 border-b text-left">قیمت</th>
-            <th className="py-2 px-4 border-b text-left">مقدار</th>
-            <th className="py-2 px-4 border-b text-left">آئٹم کا نام</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item, index) => (
-            <tr key={index}>
-              <td className="py-2 px-4 border-b">
-                <button
-                  onClick={() => setItems(items.filter((_, i) => i !== index))}
-                  className="bg-red-500 text-white rounded p-1"
-                >
-                  حذف کریں
-                </button>
-              </td>
-              <td className="py-2 px-4 border-b">{item.total}</td>
-
-              <td className="py-2 px-4 border-b">
-                <input
-                  type="number"
-                  value={item.price}
-                  onChange={(e) => handleItemChange(index, "price", parseFloat(e.target.value))}
-                  className="border border-gray-300 rounded p-1 w-16"
-                />
-              </td>
-              <td className="py-2 px-4 border-b">
-                <input
-                  type="number"
-                  value={item.quantity}
-                  min="1"
-                  onChange={(e) => handleItemChange(index, "quantity", parseInt(e.target.value))}
-                  className="border border-gray-300 rounded p-1 w-16"
-                />
-              </td>
-             
-              <td className="py-2 px-4 border-b">{item.name}</td>
-              
+      {/* Invoice Table */}
+      <div className="no-print">
+        <table className="w-full text-center table-auto border border-collapse border-gray-300">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border border-gray-300 p-2">Seriel no.</th>
+              <th className="border border-gray-300 p-2">Item Name</th>
+              <th className="border border-gray-300 p-2">Quantity</th>
+              <th className="border border-gray-300 p-2">Price</th>
+              <th className="border border-gray-300 p-2">Total Price</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Invoice Total */}
-      <div className="mt-4">
-        <h2 className="text-lg font-bold">مجموعی قیمت: {calculateSubtotal()} </h2>
+          </thead>
+          <tbody>
+            {items.map((item, index) => (
+              <tr key={index}>
+                <td className="border border-gray-300 p-2">{index + 1}</td>
+                <td className="border border-gray-300 p-2">{item.name}</td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max={predefinedItems.find((i) => i.name === item.name)?.quantity}
+                    value={item.quantity}
+                    onChange={(e) =>
+                      handleItemChange(index, "quantity", parseInt(e.target.value))
+                    }
+                    className="border border-gray-300 rounded p-1 w-full"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="number"
+                    min="0"
+                    value={item.price}
+                    onChange={(e) =>
+                      handleItemChange(index, "price", parseFloat(e.target.value))
+                    }
+                    className="border border-gray-300 rounded p-1 w-full"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">{item.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* Print and Save Button */}
+      {/* Invoice Summary and Actions */}
       <div className="mt-4 no-print">
+        <h2 className="font-bold">Total amount: {calculateSubtotal()}</h2>
         <button
           onClick={handlePrint}
-          className="bg-green-500 text-white rounded p-2"
+          className="mt-2 bg-green-500 text-white rounded p-2"
         >
-          پرنٹ اور محفوظ کریں
+          Print invoice
         </button>
       </div>
     </div>
@@ -317,4 +325,3 @@ const Invoice = () => {
 };
 
 export default Invoice;
-
