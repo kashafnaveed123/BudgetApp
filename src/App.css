@@ -1,5 +1,5 @@
 
-  @media print {
+  /* @media print {
     .no-print {
       display: none;
     }
@@ -7,4 +7,28 @@
       display: block;
     }
   }
+   */
+
+   
+
+
+   @media print {
+    .print-heading {
+      font-size: 14px;
+    }
+    .print-table {
+      border: 1px solid black;
+      width: 100%;
+    }
+    .print-table th,
+    .print-table td {
+      border: 1px solid black;
+      padding: 8px;
+    }
+    .no-print {
+      display: none;
+    }
+  }
   
+
+   

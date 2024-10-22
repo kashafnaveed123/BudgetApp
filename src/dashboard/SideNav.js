@@ -78,6 +78,15 @@ function SideNav({ profilePicURL, company }) {
               Stock
             </a>
           </li>
+          <li className="mb-4">
+            <a
+              href="/Expense"
+              className="flex items-center hover:bg-blue-100 p-3 rounded-lg"
+              onClick={() => navigate("/Expense")}
+            >
+              Expenses
+            </a>
+          </li>
         </ul>
       </aside>
 

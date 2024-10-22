@@ -12,6 +12,7 @@ import Loss from "./SideBar/Loss";
 import Invoice from "./Invoice";
 import WeeklyDetails from './SideBar/Salesman/WeeklyDetails'
 import Stock from './SideBar/Stock'
+import Expense from "./SideBar/Expense";
 import './App.css'
 import MonthlySales from "./SideBar/Salesman/MonthlyDetails";
 function App() {
@@ -33,6 +34,7 @@ function App() {
       <Route path="/WeeklyDetails" element={<WeeklyDetails/>}/>
       <Route path="/MonthlySales" element={<MonthlySales/>}/>
       <Route path="/Stock" element={<Stock/>}/>
+      <Route path="/Expense" element={<Expense/>}/>
     </Routes>
     </BrowserRouter>
     
