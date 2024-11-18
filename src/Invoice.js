@@ -151,7 +151,7 @@ const Invoice = () => {
   };
 
   return (
-    <div className="p-8 max-w-xl mx-auto bg-white shadow-md">
+    <div className="p-2 max-w-xl mx-auto bg-white shadow-md">
       {/* Invoice Header */}
       <div className="text-center mb-8">
         <img src={logo} width='20%' alt="NS Traders" className="mx-auto mb-4 " />
