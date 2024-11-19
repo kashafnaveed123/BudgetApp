@@ -266,7 +266,7 @@ const Invoice = () => {
           <tbody>
             {items.map((item, index) => (
               <tr key={index}>
-                <td className="border border-gray-400 px-2 py-2 w-44">{item.name}</td>
+                <td className="border border-gray-400 px-1 py-1 w-44">{item.name}</td>
                 <td className="border border-gray-400  px-2  py-2 ">
                   <input
                     type="number"
@@ -275,15 +275,15 @@ const Invoice = () => {
                     className="border border-gray-300 rounded p-1 w-3/4"
                   />
                 </td>
-                <td className="border border-gray-400 px-2 py-2 ">
+                <td className="border border-gray-400 px-1 py-1 ">
                   <input
                     type="number"
                     value={item.quantity}
                     onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
-                    className="border border-gray-300 rounded p-1 w-3/4"
+                    className="border border-gray-300 rounded p-1 w-2/4"
                   />
                 </td>
-                <td className="border border-gray-400 px-2 py-2  w-36">{item.total}</td>
+                <td className="border border-gray-400 px-2 py-2  w-40">{item.total}</td>
               </tr>
             ))}
             <tr>
