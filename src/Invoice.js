@@ -159,7 +159,7 @@ const Invoice = () => {
             <br />
             <label>Time: {invoiceDetails.time}</label>
           </div>
-          <div className="no-print">
+          <div >
             {isPrinting ? (
               <p>Customer Name: {invoiceDetails.customerName}</p>
             ) : (
