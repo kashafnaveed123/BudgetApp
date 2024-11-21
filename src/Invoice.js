@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { db } from './SideBar/config/Firebase'; // Import Firebase setup
-import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore';
-import logo from './dashboard/logo.png';
+import { db } from "./SideBar/config/Firebase"; // Import Firebase setup
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  doc,
+  addDoc,
+} from "firebase/firestore";
+import logo from "./dashboard/logo.png";
 
 const Invoice = () => {
   const [predefinedItems, setPredefinedItems] = useState([]);
@@ -14,28 +20,29 @@ const Invoice = () => {
   const [invoiceDetails, setInvoiceDetails] = useState({
     customerName: "",
     shopName: "",
+    shopName: "",
     date: new Date().toLocaleDateString(),
-    time: new Date().toLocaleTimeString()
+    time: new Date().toLocaleTimeString(),
   });
 
   useEffect(() => {
     const fetchSalesmen = async () => {
       const querySnapshot = await getDocs(collection(db, "salesmen"));
-      const salesmenArray = querySnapshot.docs.map(doc => ({
-        id: doc.id, 
+      const salesmenArray = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
         firstName: doc.data().firstName,
-        lastName: doc.data().lastName
+        lastName: doc.data().lastName,
       }));
       setSalesmen(salesmenArray);
     };
 
     const fetchItems = async () => {
       const querySnapshot = await getDocs(collection(db, "spices"));
-      const itemsArray = querySnapshot.docs.map(doc => ({
+      const itemsArray = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         name: doc.data().name,
         quantity: doc.data().quantity,
-        price: doc.data().price || 0
+        price: doc.data().price || 0,
       }));
       setPredefinedItems(itemsArray);
     };
@@ -44,13 +51,15 @@ const Invoice = () => {
     fetchItems();
   }, []);
 
-  const filteredItems = predefinedItems.filter(item =>
+  const filteredItems = predefinedItems.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const addSelectedItems = () => {
-    const itemsToAdd = selectedItems.filter(selectedItem => {
-      const availableItem = predefinedItems.find(item => item.name === selectedItem.name);
+    const itemsToAdd = selectedItems.filter((selectedItem) => {
+      const availableItem = predefinedItems.find(
+        (item) => item.name === selectedItem.name
+      );
       return availableItem && selectedItem.quantity <= availableItem.quantity;
     });
 
@@ -74,7 +83,10 @@ const Invoice = () => {
 
   const handleSelectItem = (item) => {
     if (!selectedItems.find((i) => i.name === item.name)) {
-      setSelectedItems([...selectedItems, { ...item, quantity: 1, total: item.price }]);
+      setSelectedItems([
+        ...selectedItems,
+        { ...item, quantity: 1, total: item.price },
+      ]);
     } else {
       setSelectedItems(selectedItems.filter((i) => i.name !== item.name));
     }
@@ -86,7 +98,7 @@ const Invoice = () => {
 
   const areItemsInStock = () => {
     for (let item of items) {
-      const availableItem = predefinedItems.find(i => i.id === item.id);
+      const availableItem = predefinedItems.find((i) => i.id === item.id);
       if (!availableItem || item.quantity > availableItem.quantity) {
         alert(`Not enough stock for ${item.name}`);
         return false;
@@ -98,7 +110,7 @@ const Invoice = () => {
   const updateBudget = async () => {
     for (let item of items) {
       const itemDoc = doc(db, "spices", item.id);
-      const availableItem = predefinedItems.find(i => i.id === item.id);
+      const availableItem = predefinedItems.find((i) => i.id === item.id);
       const newQuantity = availableItem.quantity - item.quantity;
 
       if (newQuantity >= 0) {
@@ -117,7 +129,7 @@ const Invoice = () => {
       time: invoiceDetails.time,
       salesman: salesman,
       items: items,
-      total: calculateSubtotal()
+      total: calculateSubtotal(),
     };
 
     try {
@@ -159,7 +171,7 @@ const Invoice = () => {
             <br />
             <label>Time: {invoiceDetails.time}</label>
           </div>
-          <div >
+          <div>
             {isPrinting ? (
               <p>Customer Name: {invoiceDetails.customerName}</p>
             ) : (
@@ -169,7 +181,7 @@ const Invoice = () => {
                 onChange={(e) =>
                   setInvoiceDetails({
                     ...invoiceDetails,
-                    customerName: e.target.value
+                    customerName: e.target.value,
                   })
                 }
                 className="border border-gray-300 rounded p-2 mb-2 w-full"
@@ -186,13 +198,35 @@ const Invoice = () => {
                 onChange={(e) =>
                   setInvoiceDetails({
                     ...invoiceDetails,
-                    shopName: e.target.value
+                    shopName: e.target.value,
                   })
                 }
                 className="border border-gray-300 rounded p-2 w-full"
                 placeholder="Shop name"
               />
             )}
+
+            <div className="mt-2">
+              {isPrinting ? (
+                <p>Sales Man : {salesman}</p>
+              ) : (
+                <select
+                  value={salesman}
+                  onChange={(e) => setSalesman(e.target.value)}
+                  className="border border-gray-300 rounded p-2 w-full"
+                >
+                  <option value="">Select Salesman</option>
+                  {salesmen.map((salesman) => (
+                    <option
+                      key={salesman.id}
+                      value={`${salesman.firstName} ${salesman.lastName}`}
+                    >
+                      {salesman.firstName} {salesman.lastName}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -212,7 +246,9 @@ const Invoice = () => {
             <label key={index} className="flex items-center mb-2">
               <input
                 type="checkbox"
-                checked={selectedItems.some(selectedItem => selectedItem.name === item.name)}
+                checked={selectedItems.some(
+                  (selectedItem) => selectedItem.name === item.name
+                )}
                 onChange={() => handleSelectItem(item)}
                 className="mr-2"
               />
@@ -242,7 +278,9 @@ const Invoice = () => {
           <tbody>
             {items.map((item, index) => (
               <tr key={index}>
-                <td className="border border-gray-400 px-2 py-2 w-44">{item.name}</td>
+                <td className="border border-gray-400 px-2 py-2 w-44">
+                  {item.name}
+                </td>
                 <td className="border border-gray-400 px-2 py-2">
                   {isPrinting ? (
                     <span>{item.price}</span>
@@ -250,7 +288,9 @@ const Invoice = () => {
                     <input
                       type="number"
                       value={item.price}
-                      onChange={(e) => handleItemChange(index, "price", e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(index, "price", e.target.value)
+                      }
                       className="border border-gray-300 rounded p-1 w-3/4"
                     />
                   )}
@@ -262,12 +302,16 @@ const Invoice = () => {
                     <input
                       type="number"
                       value={item.quantity}
-                      onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
+                      onChange={(e) =>
+                        handleItemChange(index, "quantity", e.target.value)
+                      }
                       className="border border-gray-300 rounded p-1 w-3/4"
                     />
                   )}
                 </td>
-                <td className="border border-gray-400 px-2 py-2">{item.total}</td>
+                <td className="border border-gray-400 px-2 py-2">
+                  {item.total}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -278,7 +322,9 @@ const Invoice = () => {
       {items.length > 0 && (
         <div className="flex justify-end mt-4">
           <div>
-            <label className="block font-bold">Subtotal: {calculateSubtotal()}</label>
+            <label className="block font-bold">
+              Subtotal: {calculateSubtotal()}
+            </label>
           </div>
         </div>
       )}
