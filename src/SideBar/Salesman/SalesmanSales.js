@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../config/Firebase";
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, getDocs, updateDoc, doc, getDoc } from "firebase/firestore";
+
 
 const SalesmanProgress = () => {
   const [salesmanData, setSalesmanData] = useState([]);
@@ -108,54 +109,77 @@ const SalesmanProgress = () => {
     }
   };
 
-  // Handle delete functionality for a specific item
+  // Inside the handleDeleteItem function
+
   const handleDeleteItem = async (saleId, itemIndex) => {
-    const updatedSalesmanData = salesmanData.map((salesman) => {
-      const updatedSales = salesman.sales.map((sale) => {
-        if (sale.id === saleId) {
-          const itemToDelete = sale.items[itemIndex].total; // Save the total of the item to delete
-          const updatedItems = sale.items.filter((_, i) => i !== itemIndex);
+    try {
+      // Map through sales data to find the specific sale and item to delete
+      debugger
+      const updatedSalesmanData = salesmanData.map((salesman) => {
+        const updatedSales = salesman.sales.map((sale) => {
+          if (sale.id === saleId) {
+            const itemToDelete = sale.items[itemIndex]; // Find the item to delete
+            const updatedItems = sale.items.filter((_, i) => i !== itemIndex);
 
-          // If no items are left, set the total to 0
-          const updatedTotal =
-            updatedItems.length === 0
-              ? 0
-              : updatedItems.reduce((acc, item) => acc + item.total, 0);
+            // Update sale's total
+            const updatedTotal = updatedItems.reduce(
+              (acc, item) => acc + item.total,
+              0
+            );
 
-          // Subtract the item's total from the salesman's total sales
-          const updatedSalesmanTotalSales = salesman.totalSales - itemToDelete;
+            return { ...sale, items: updatedItems, total: updatedTotal };
+          }
+          return sale;
+        });
 
-          return {
-            ...sale,
-            items: updatedItems,
-            total: updatedTotal,
-            salesmanTotalSales: updatedSalesmanTotalSales,
-          };
-        }
-        return sale;
+        // Update the total sales for the salesman
+        const newTotalSales = updatedSales.reduce(
+          (acc, sale) => acc + sale.total,
+          0
+        );
+
+        return { ...salesman, sales: updatedSales, totalSales: newTotalSales };
       });
 
-      // Recalculate total sales for the salesman
-      const newTotalSales = updatedSales.reduce(
-        (acc, sale) => acc + sale.total,
-        0
-      );
+      setSalesmanData(updatedSalesmanData);
 
-      return { ...salesman, sales: updatedSales, totalSales: newTotalSales };
-    });
+      // Update Firebase
+      const invoiceRef = doc(db, "invoices", saleId);
+      const updatedSale = updatedSalesmanData
+        .find((s) => s.sales.some((sale) => sale.id === saleId))
+        .sales.find((sale) => sale.id === saleId);
 
-    setSalesmanData(updatedSalesmanData);
+      await updateDoc(invoiceRef, {
+        items: updatedSale.items,
+        total: updatedSale.total, // Update the total for the invoice
+      });
 
-    // Update Firebase
-    const invoiceRef = doc(db, "invoices", saleId);
-    const updatedSale = updatedSalesmanData
-      .find((s) => s.sales.some((sale) => sale.id === saleId))
-      .sales.find((sale) => sale.id === saleId);
+      // Update stock quantity in Firebase
+      const itemToDelete = salesmanData
+        .find((s) => s.sales.some((sale) => sale.id === saleId))
+        .sales.find((sale) => sale.id === saleId).items[itemIndex];
 
-    await updateDoc(invoiceRef, {
-      items: updatedSale.items,
-      total: updatedSale.total, // Update the total for the invoice
-    });
+      if (itemToDelete) {
+        const productRef = doc(db, "spices", itemToDelete.id); // Assuming the item ID is stored as 'id'
+        const productDoc = await getDoc(productRef);
+
+        if (productDoc.exists()) {
+          const currentStock = productDoc.data().quantity || 0;
+
+          // Update stock by adding the deleted quantity back
+          await updateDoc(productRef, {
+            quantity: currentStock + itemToDelete.quantity,
+          });
+          console.log(
+            `Stock updated successfully for product ${itemToDelete.id}`
+          );
+        } else {
+          console.error("Product not found in the database!");
+        }
+      }
+    } catch (error) {
+      console.error("Error updating stock or deleting item:", error);
+    }
   };
 
   const toggleExpandSale = (saleIndex) => {
@@ -173,7 +197,7 @@ const SalesmanProgress = () => {
       <h1 className="text-3xl text-center text-blue-600 font-bold mb-8">
         Salesman Sales
       </h1>
-
+  
       <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">
         <thead className="bg-gray-200">
           <tr>
@@ -193,7 +217,7 @@ const SalesmanProgress = () => {
                 </td>
                 <td className="p-4 border">{salesman.totalSales || "--"}</td>
               </tr>
-
+  
               {selectedSalesman &&
                 selectedSalesman.salesman === salesman.salesman && (
                   <tr>
@@ -201,129 +225,123 @@ const SalesmanProgress = () => {
                       <table className="min-w-full mt-4 bg-white border border-gray-300 rounded-lg shadow-lg">
                         <thead className="bg-gray-200">
                           <tr>
-                            <th className="p-4 border text-left">
-                              Customer Name
-                            </th>
-                            <th className="p-4 border text-left">
-                              Customer Shop
-                            </th>
+                            <th className="p-4 border text-left">Customer Name</th>
+                            <th className="p-4 border text-left">Customer Shop</th>
                             <th className="p-4 border text-left">Date</th>
-                            <th className="p-4 border text-left">
-                              Price (PKR)
-                            </th>
+                            <th className="p-4 border text-left">Price (PKR)</th>
                             <th className="p-4 border text-left">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {salesman.sales.map((sale, saleIndex) => (
-                            <React.Fragment key={saleIndex}>
-                              <tr className="border-t">
-                                <td className="p-4 border">
-                                  {sale.customerName || "--"}
-                                </td>
-                                <td className="p-4 border">
-                                  {sale.shopName || "--"}
-                                </td>
-                                <td className="p-4 border">
-                                  {sale.date || "--"}
-                                </td>
-                                <td className="p-4 border">
-                                  {sale.total || "--"}
-                                </td>
-                                <td className="p-4 border">
-                                  <button
-                                    onClick={() => toggleExpandSale(saleIndex)}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                                  >
-                                    {expandedSales[saleIndex]
-                                      ? "Hide Details"
-                                      : "See More"}
-                                  </button>
-                                </td>
-                              </tr>
-
-                              {expandedSales[saleIndex] && (
-                                <tr>
-                                  <td colSpan="5" className="border-t">
-                                    <table className="min-w-full bg-gray-50">
-                                      <thead>
-                                        <tr>
-                                          <th className="p-4 border text-left">
-                                            Item Name
-                                          </th>
-                                          <th className="p-4 border text-left">
-                                            Price
-                                          </th>
-                                          <th className="p-4 border text-left">
-                                            Quantity
-                                          </th>
-                                          <th className="p-4 border text-left">
-                                            Total
-                                          </th>
-                                          <th className="p-4 border text-left">
-                                            Actions
-                                          </th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {sale.items.length === 0 ? (
-                                          <tr>
-                                            <td
-                                              colSpan="5"
-                                              className="text-center p-4"
-                                            >
-                                              No items left.
-                                            </td>
-                                          </tr>
-                                        ) : (
-                                          sale.items.map((item, itemIndex) => (
-                                            <tr key={itemIndex}>
-                                              <td className="p-4 border">
-                                                {item.name || "--"}
-                                              </td>
-                                              <td className="p-4 border">
-                                                {item.price || "--"}
-                                              </td>
-                                              <td className="p-4 border">
-                                                {item.quantity || "--"}
-                                              </td>
-                                              <td className="p-4 border">
-                                                {item.total || "--"}
-                                              </td>
-                                              <td className="p-4 border">
-                                                <button
-                                                  onClick={() =>
-                                                    handleEditItem(
-                                                      sale.id,
-                                                      itemIndex
-                                                    )
-                                                  }
-                                                  className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
-                                                >
-                                                  Edit
-                                                </button>
-                                                <button
-                                                  onClick={() =>
-                                                    handleDeleteItem(
-                                                      sale.id,
-                                                      itemIndex
-                                                    )
-                                                  }
-                                                  className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                                                >
-                                                  Delete
-                                                </button>
-                                              </td>
-                                            </tr>
-                                          ))
-                                        )}
-                                      </tbody>
-                                    </table>
+                          {/* Sort sales by date (most recent first) */}
+                          {salesman.sales
+                            .slice() // Avoid mutating original array
+                            .sort((a, b) => new Date(b.date) - new Date(a.date))
+                            .map((sale, saleIndex) => (
+                              <React.Fragment key={saleIndex}>
+                                <tr className="border-t">
+                                  <td className="p-4 border">
+                                    {sale.customerName || "--"}
+                                  </td>
+                                  <td className="p-4 border">
+                                    {sale.shopName || "--"}
+                                  </td>
+                                  <td className="p-4 border">{sale.date || "--"}</td>
+                                  <td className="p-4 border">{sale.total || "--"}</td>
+                                  <td className="p-4 border">
+                                    <button
+                                      onClick={() => toggleExpandSale(saleIndex)}
+                                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                                    >
+                                      {expandedSales[saleIndex]
+                                        ? "Hide Details"
+                                        : "See More"}
+                                    </button>
                                   </td>
                                 </tr>
-                              )}
-                            </React.Fragment>
-                          ))}
+  
+                                {expandedSales[saleIndex] && (
+                                  <tr>
+                                    <td colSpan="5" className="border-t">
+                                      <table className="min-w-full bg-gray-50">
+                                        <thead>
+                                          <tr>
+                                            <th className="p-4 border text-left">
+                                              Item Name
+                                            </th>
+                                            <th className="p-4 border text-left">
+                                              Price
+                                            </th>
+                                            <th className="p-4 border text-left">
+                                              Quantity
+                                            </th>
+                                            <th className="p-4 border text-left">
+                                              Total
+                                            </th>
+                                            <th className="p-4 border text-left">
+                                              Actions
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {sale.items.length === 0 ? (
+                                            <tr>
+                                              <td
+                                                colSpan="5"
+                                                className="text-center p-4"
+                                              >
+                                                No items left.
+                                              </td>
+                                            </tr>
+                                          ) : (
+                                            sale.items.map((item, itemIndex) => (
+                                              <tr key={itemIndex}>
+                                                <td className="p-4 border">
+                                                  {item.name || "--"}
+                                                </td>
+                                                <td className="p-4 border">
+                                                  {item.price || "--"}
+                                                </td>
+                                                <td className="p-4 border">
+                                                  {item.quantity || "--"}
+                                                </td>
+                                                <td className="p-4 border">
+                                                  {item.total || "--"}
+                                                </td>
+                                                <td className="p-4 border">
+                                                  <button
+                                                    onClick={() =>
+                                                      handleEditItem(
+                                                        sale.id,
+                                                        itemIndex
+                                                      )
+                                                    }
+                                                    className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                                                  >
+                                                    Edit
+                                                  </button>
+                                                  <button
+                                                    onClick={() =>
+                                                      handleDeleteItem(
+                                                        sale.id,
+                                                        itemIndex
+                                                      )
+                                                    }
+                                                    className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                                                  >
+                                                    Delete
+                                                  </button>
+                                                </td>
+                                              </tr>
+                                            ))
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            ))}
                         </tbody>
                       </table>
                     </td>
@@ -335,16 +353,10 @@ const SalesmanProgress = () => {
       </table>
     </div>
   );
+  
 };
 
 export default SalesmanProgress;
-
-
-
-
-
-
-
 
 // import React, { useState, useEffect } from "react";
 // import { db } from "../config/Firebase";
